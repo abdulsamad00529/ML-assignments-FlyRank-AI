@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identity Kit — Abdul Samad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --main: #24334A;       /* Ink Navy */
+    --text: #14171A;       /* Near-black */
+    --bg: #FAFAF7;         /* Near-white */
+    --accent: #2F8F7A;     /* Signal Teal */
+    --line: rgba(20,23,26,0.10);
+    --muted: #6B7280;
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --space-xs: 8px;
+    --space-sm: 16px;
+    --space-md: 32px;
+    --space-lg: 64px;
+    --space-xl: 104px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: var(--space-xl) var(--space-md) var(--space-lg);
+  }
+
+  header.kit-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--space-md);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: var(--space-lg);
+  }
+
+  .mark {
+    width: 64px;
+    height: 64px;
+    background: var(--main);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .mark span {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--bg);
+    letter-spacing: -0.02em;
+  }
+
+  .kit-header .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 6px;
+  }
+  .kit-header h1 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 38px);
+    line-height: 1.1;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+  .section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .section-label b { color: var(--text); font-weight: 500; }
+
+  /* Type */
+  .type-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: var(--space-md);
+    align-items: baseline;
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .type-row:last-child { border-bottom: none; }
+  .type-role {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .type-role .fname {
+    display: block;
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--text);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .heading-sample {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 34px;
+    letter-spacing: -0.01em;
+  }
+  .body-sample {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--text);
+    max-width: 52ch;
+  }
+
+  /* Palette */
+  .palette {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-sm);
+  }
+  .swatch {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .swatch .fill {
+    height: 84px;
+  }
+  .swatch .info {
+    padding: var(--space-sm);
+  }
+  .swatch .role {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 4px;
+  }
+  .swatch .hex {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+  }
+  @media (max-width: 640px) {
+    .palette { grid-template-columns: repeat(2, 1fr); }
+    .type-row { grid-template-columns: 1fr; gap: 8px; }
+  }
+
+  /* Logo / favicon */
+  .mark-grid {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .mark-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .mark-card .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .mark-lg {
+    width: 128px; height: 128px; border-radius: 8px;
+    background: var(--main);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mark-lg span { font-family: var(--font-heading); font-weight: 700; font-size: 46px; color: var(--bg); }
+  .mark-sm {
+    width: 48px; height: 48px; border-radius: 3px;
+    background: var(--main);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mark-sm span { font-family: var(--font-heading); font-weight: 700; font-size: 18px; color: var(--bg); }
+  .mark-fav {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: var(--main);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mark-fav span { font-family: var(--font-heading); font-weight: 700; font-size: 13px; color: var(--bg); }
+  .mark-inverse {
+    background: var(--bg);
+    border: 1px solid var(--line);
+  }
+  .mark-inverse span { color: var(--main); }
+
+  /* Style note */
+  .style-note {
+    background: var(--main);
+    color: var(--bg);
+    border-radius: 6px;
+    padding: var(--space-lg) var(--space-lg);
+  }
+  .style-note p {
+    margin: 0 0 var(--space-sm);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  .style-note p:last-child { margin-bottom: 0; }
+  .style-note code {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    background: rgba(250,250,247,0.10);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .style-note .mood {
+    color: rgba(250,250,247,0.72);
+    font-style: italic;
+  }
+
+  footer {
+    margin-top: var(--space-xl);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="kit-header">
+    <div class="mark"><span>AS</span></div>
+    <div>
+      <p class="eyebrow">Identity Kit — v1</p>
+      <h1>Abdul Samad — Portfolio Visual Identity</h1>
+    </div>
+  </header>
+
+  <section aria-label="Type">
+    <p class="section-label"><b>01</b> Type — two fonts, two jobs</p>
+    <div class="type-row">
+      <div class="type-role"><span class="fname">Heading</span>Space Grotesk · 700</div>
+      <div class="heading-sample">Ship the ugly version first</div>
+    </div>
+    <div class="type-row">
+      <div class="type-role"><span class="fname">Body</span>Inter · 400 / 600</div>
+      <div class="body-sample">A pipeline that runs at 3am without a page is worth more than a slide about one. Direct, technical, no filler — this is where the work speaks.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-role"><span class="fname">Labels / code</span>JetBrains Mono · 400</div>
+      <div class="body-sample" style="font-family: var(--font-mono); font-size: 14px;">ROC-AUC 0.91 · n8n → Groq → WhatsApp Cloud API</div>
+    </div>
+  </section>
+
+  <section aria-label="Palette">
+    <p class="section-label"><b>02</b> Palette — one main, near-black, near-white, one accent</p>
+    <div class="palette">
+      <div class="swatch">
+        <div class="fill" style="background: var(--main);"></div>
+        <div class="info"><p class="role">Main — Ink Navy</p><p class="hex">#24334A</p></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background: var(--text);"></div>
+        <div class="info"><p class="role">Text — Near-Black</p><p class="hex">#14171A</p></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background: var(--bg); border-bottom: 1px solid var(--line);"></div>
+        <div class="info"><p class="role">Background — Near-White</p><p class="hex">#FAFAF7</p></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background: var(--accent);"></div>
+        <div class="info"><p class="role">Accent — Signal Teal</p><p class="hex">#2F8F7A</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Logo and favicon">
+    <p class="section-label"><b>03</b> Mark — monogram, three sizes</p>
+    <div class="mark-grid">
+      <div class="mark-card">
+        <div class="mark-lg"><span>AS</span></div>
+        <p class="label">LOGO · 128PX</p>
+      </div>
+      <div class="mark-card">
+        <div class="mark-sm"><span>AS</span></div>
+        <p class="label">NAV · 48PX</p>
+      </div>
+      <div class="mark-card">
+        <div class="mark-fav"><span>AS</span></div>
+        <p class="label">FAVICON · 32PX</p>
+      </div>
+      <div class="mark-card">
+        <div class="mark-sm mark-inverse"><span>AS</span></div>
+        <p class="label">ON LIGHT</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Style note">
+    <p class="section-label"><b>04</b> Style note — paste into the Claude Project</p>
+    <div class="style-note">
+      <p>Fonts: <code>Space Grotesk</code> (headings) / <code>Inter</code> (body) / <code>JetBrains Mono</code> (labels &amp; code). Colors: main <code>#24334A</code>, text <code>#14171A</code>, background <code>#FAFAF7</code>, accent <code>#2F8F7A</code>.</p>
+      <p class="mood">Mood: quiet, technical confidence — the frame stays out of the way so the pipelines, metrics, and shipped systems do the talking.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Identity Kit · Week 3 · AI Fluency</span>
+    <span>Fonts via Google Fonts — free for commercial use</span>
+  </footer>
+
+</main>
+</body>
+</html>

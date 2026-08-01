@@ -1,0 +1,376 @@
+{
+  "name": "LinkedIn Post Pipeline - Gather to Fact-Checked Draft (Groq)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "731e51ad-db54-4b81-a815-5fc43b6f4028",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "project_name",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "what_built",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "tech_stack",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "timeframe",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "team_or_solo",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "6",
+              "name": "verified_metrics",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "7",
+              "name": "unverified_claims",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "8",
+              "name": "post_type",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1729a2b9-bbd5-4213-aee5-6aa79246e570",
+      "name": "STEP 1 - Gather (Input Fields)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        96
+      ],
+      "notes": "Fill these manually per run. This is the handoff contract into Step 2 - every field here is a required input, no free text blob."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"openai/gpt-oss-120b\",\n  max_tokens: 800,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You extract structured narrative facts from raw project notes for a LinkedIn post. Output ONLY valid JSON, no markdown fences, no preamble, no explanation before or after. Schema: {\\\"hook_angle\\\": string, \\\"key_facts\\\": [{\\\"fact\\\": string, \\\"status\\\": \\\"verified\\\"|\\\"unverified\\\"}], \\\"tone_notes\\\": string}. Mark a fact unverified if it came from the unverified_claims field or if a metric has no clear source. Never invent facts not present in the input.\"\n    },\n    {\n      role: \"user\",\n      content: `Project: ${$json.project_name}\\nWhat was built: ${$json.what_built}\\nTech stack: ${$json.tech_stack}\\nTimeframe: ${$json.timeframe}\\nTeam or solo: ${$json.team_or_solo}\\nVerified metrics: ${$json.verified_metrics}\\nUnverified/uncertain claims: ${$json.unverified_claims}\\nPost type: ${$json.post_type}`\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "be3a41cd-0b61-43d2-bcf7-77b69fc38329",
+      "name": "STEP 2 - Synthesize (Groq call 1)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        96
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "VWZ7mXPJDo3YSDon",
+          "name": "Groq account"
+        }
+      },
+      "notes": "Handoff: outputs JSON with hook_angle, key_facts[] tagged verified/unverified, tone_notes. Response text lives at choices[0].message.content (parse it downstream)."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"openai/gpt-oss-120b\",\n  max_tokens: 600,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You write LinkedIn posts in this exact voice: direct, decision-driven, honest about limits, no hype. No emoji-stacking, no 'thrilled to announce', no fake humility, no exclamation-point stacking. Short sentences. Concrete technical detail over vague enthusiasm. Use ONLY facts tagged 'verified' in the input JSON as claims of fact. If an 'unverified' fact is present, you may reference it only with explicit hedge language (e.g. 'early numbers suggest', 'not yet independently verified') or omit it entirely - never state it as settled fact. If the input describes team work, attribute it as team work, not solo. Output only the post text, nothing else.\"\n    },\n    {\n      role: \"user\",\n      content: $json.choices[0].message.content\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "9a2492e9-4f09-4fc2-afb1-47a2951129ed",
+      "name": "STEP 3 - Draft (Groq call 2)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        96
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "VWZ7mXPJDo3YSDon",
+          "name": "Groq account"
+        }
+      },
+      "notes": "Handoff: plain text LinkedIn post draft at choices[0].message.content, built only from tagged facts."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"openai/gpt-oss-120b\",\n  max_tokens: 500,\n  messages: [\n    {\n      role: \"system\",\n      content: \"You are a strict editor checking a LinkedIn draft against a fact sheet. Flag: (1) any claim in the draft not present in the verified key_facts, (2) any unverified fact stated as settled, (3) hype language (thrilled, excited, game-changing, revolutionary, honored, humbled), (4) solo/team attribution mismatches versus the source facts, (5) voice drift from 'direct, decision-driven, honest about limits, no hype'. Output ONLY valid JSON, no markdown fences: {\\\"pass\\\": boolean, \\\"issues\\\": [string]}. pass is true only if issues is empty.\"\n    },\n    {\n      role: \"user\",\n      content: 'FACT SHEET:\\n' + $('STEP 2 - Synthesize (Groq call 1)').item.json.choices[0].message.content + '\\n\\nDRAFT:\\n' + $json.choices[0].message.content\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "b4d89d84-f026-40d9-84c8-963aefe73452",
+      "name": "STEP 4 - Critique (Groq call 3)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        96
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "VWZ7mXPJDo3YSDon",
+          "name": "Groq account"
+        }
+      },
+      "notes": "Handoff: {pass, issues[]} at choices[0].message.content. This is the gate - a human should never skip reading 'issues' even if pass is true."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ JSON.parse($json.choices[0].message.content).pass }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f9e8f6e3-3904-4bbb-bd8b-07e19429a6df",
+      "name": "Pass?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "final_post",
+              "value": "={{ $('STEP 3 - Draft (Groq call 2)').item.json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "status",
+              "value": "passed_first_review",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e0ec8bf0-03c8-42df-b325-bb14a50e8326",
+      "name": "STEP 5b - Format (passed)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"openai/gpt-oss-120b\",\n  max_tokens: 600,\n  messages: [\n    {\n      role: \"system\",\n      content: \"Revise the LinkedIn draft to fix every issue listed. Keep the voice: direct, decision-driven, honest about limits, no hype. Output only the revised post text, nothing else.\"\n    },\n    {\n      role: \"user\",\n      content: 'DRAFT:\\n' + $('STEP 3 - Draft (Groq call 2)').item.json.choices[0].message.content + '\\n\\nISSUES TO FIX:\\n' + JSON.stringify(JSON.parse($json.choices[0].message.content).issues)\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "76abd0f0-8eb9-4217-9950-fdf18ba6c30e",
+      "name": "STEP 5a - Revise if failed (Groq call 4)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        192
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "VWZ7mXPJDo3YSDon",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "STEP 1 - Gather (Input Fields)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEP 1 - Gather (Input Fields)": {
+      "main": [
+        [
+          {
+            "node": "STEP 2 - Synthesize (Groq call 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEP 2 - Synthesize (Groq call 1)": {
+      "main": [
+        [
+          {
+            "node": "STEP 3 - Draft (Groq call 2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEP 3 - Draft (Groq call 2)": {
+      "main": [
+        [
+          {
+            "node": "STEP 4 - Critique (Groq call 3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEP 4 - Critique (Groq call 3)": {
+      "main": [
+        [
+          {
+            "node": "Pass?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass?": {
+      "main": [
+        [
+          {
+            "node": "STEP 5b - Format (passed)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "STEP 5a - Revise if failed (Groq call 4)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0b798695-e01f-47b2-b8bc-903b2675aac5",
+  "meta": {
+    "instanceId": "1ba3a92421f179517fd7845ce5f13e092bcf9ce3ad60fd9fcd8779b903223fde"
+  },
+  "nodeGroups": [],
+  "id": "S1JAQOJChTX9RTFe",
+  "tags": []
+}
